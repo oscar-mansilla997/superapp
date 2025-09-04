@@ -17,7 +17,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     padding: 12,
-    backgroundColor: "#009929",
+    backgroundColor: "#1b003a"
   },
   backText: { color: "#fff", fontSize: 16 },
   title: { flex: 1, textAlign: "center", color: "#fff", fontWeight: "bold" },
