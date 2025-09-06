@@ -1,12 +1,12 @@
-// frontend/src/screens/ProfileScreen.tsx
 import React, { useContext, useEffect, useState } from "react";
-import { View, Text, FlatList, TouchableOpacity, StyleSheet } from "react-native";
+import { View, Text, FlatList, StyleSheet, SafeAreaView, TouchableOpacity } from "react-native";
 import { UserContext } from "../context/UserContext";
+import Header from "../components/Header";
 
 // Tipos
 type Turno = {
   _id: string;
-  fecha: string;
+  fecha: string; // formato ISO: "2025-09-05"
   hora: string;
   servicioId: string;
   usuarioId: string;
@@ -20,20 +20,27 @@ type Servicio = {
   estado: "pendiente" | "aprobado" | "rechazado";
 };
 
+// Función para obtener el nombre del día en español
+const getNombreDia = (fecha: string) => {
+  const dias = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"];
+  const fechaObj = new Date(fecha);
+  return dias[fechaObj.getDay()];
+};
+
 export default function ProfileScreen({ navigation }: any) {
-  const { userId, userRole } = useContext(UserContext);
+  const { userId } = useContext(UserContext);
 
   const [misTurnos, setMisTurnos] = useState<Turno[]>([]);
   const [misServicios, setMisServicios] = useState<Servicio[]>([]);
+  const [expandedTurnos, setExpandedTurnos] = useState(false);
+  const [expandedServicios, setExpandedServicios] = useState(false);
 
   useEffect(() => {
-    // Traer turnos del usuario
     fetch(`http://localhost:5000/turnos?usuarioId=${userId}`)
       .then(res => res.json())
       .then((data: Turno[]) => setMisTurnos(data))
       .catch(console.error);
 
-    // Traer servicios creados por el usuario
     fetch(`http://localhost:5000/servicios?creadorId=${userId}`)
       .then(res => res.json())
       .then((data: Servicio[]) => setMisServicios(data))
@@ -41,47 +48,96 @@ export default function ProfileScreen({ navigation }: any) {
   }, [userId]);
 
   return (
-    <View style={styles.container}>
-      {/* Botón de Atrás */}
-      <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-        <Text style={styles.backText}>{"< Atrás"}</Text>
-      </TouchableOpacity>
+    <SafeAreaView style={{ flex: 1 }}>
+      <Header title="" navigation={navigation} />
 
-      <Text style={styles.title}>Mi perfil</Text>
+      <View style={styles.container}>
+        <Text style={styles.title}>Mi perfil</Text>
 
-      <Text style={styles.subtitle}>Mis turnos</Text>
-      <FlatList
-        data={misTurnos}
-        keyExtractor={(t: Turno) => t._id}
-        renderItem={({ item }: { item: Turno }) => (
-          <View style={styles.card}>
-            <Text>Fecha: {item.fecha}</Text>
-            <Text>Hora: {item.hora}</Text>
-          </View>
+        {/* Mis Turnos */}
+        <TouchableOpacity onPress={() => setExpandedTurnos(!expandedTurnos)}>
+          <Text style={styles.sectionText}>
+            {expandedTurnos ? "Ocultar mis turnos" : "Mis turnos"}
+          </Text>
+        </TouchableOpacity>
+
+        {expandedTurnos && (
+          <FlatList
+            data={misTurnos}
+            keyExtractor={(t: Turno) => t._id}
+            renderItem={({ item }: { item: Turno }) => {
+              const servicio = misServicios.find(s => s._id === item.servicioId);
+              const dia = getNombreDia(item.fecha);
+              return (
+                <View style={styles.card}>
+                  <Text style={styles.cardTitle}>
+                    {servicio ? servicio.nombre : "Servicio desconocido"}
+                  </Text>
+                  <Text style={styles.cardText}>
+                    {dia}, {item.fecha} - {item.hora}
+                  </Text>
+                </View>
+              );
+            }}
+          />
         )}
-      />
 
-      <Text style={styles.subtitle}>Mis servicios</Text>
-      <FlatList
-        data={misServicios}
-        keyExtractor={(s: Servicio) => s._id}
-        renderItem={({ item }: { item: Servicio }) => (
-          <View style={styles.card}>
-            <Text>Nombre: {item.nombre}</Text>
-            <Text>Estado: {item.estado}</Text>
-          </View>
+        {/* Mis Servicios */}
+        <TouchableOpacity onPress={() => setExpandedServicios(!expandedServicios)}>
+          <Text style={styles.sectionText}>
+            {expandedServicios ? "Ocultar mis servicios" : "Mis servicios"}
+          </Text>
+        </TouchableOpacity>
+
+        {expandedServicios && (
+          <FlatList
+            data={misServicios}
+            keyExtractor={(s: Servicio) => s._id}
+            renderItem={({ item }: { item: Servicio }) => (
+              <View style={styles.card}>
+                <Text style={styles.cardTitle}>{item.nombre}</Text>
+                <Text style={styles.cardText}>Estado: {item.estado}</Text>
+              </View>
+            )}
+          />
         )}
-      />
-    </View>
+      </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 16, backgroundColor: "#f2f2f2" },
-  backButton: { marginBottom: 16 },
-  backText: { color: "#009929", fontSize: 16 },
   title: { fontSize: 24, fontWeight: "bold", marginBottom: 16 },
-  subtitle: { fontSize: 20, fontWeight: "600", marginTop: 16, marginBottom: 8 },
-  card: { backgroundColor: "#fff", padding: 12, marginBottom: 8, borderRadius: 8 },
+  sectionText: {
+    color: "#000",
+    fontWeight: "600",
+    fontSize: 16,
+    marginBottom: 12,
+  },
+  card: {
+    backgroundColor: "#fff",
+    padding: 14,
+    marginBottom: 10,
+    borderRadius: 10,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 3,
+  },
+  cardTitle: {
+    fontWeight: "bold",
+    fontSize: 16,
+    marginBottom: 4,
+  },
+  cardText: {
+    fontSize: 14,
+    color: "#555",
+  },
 });
+
+
+
+
 

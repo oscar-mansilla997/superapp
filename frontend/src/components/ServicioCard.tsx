@@ -35,7 +35,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     borderRadius: 12,
     margin: 8,
-    width: 150, // ancho fijo para grid
+    width: 160, // ancho fijo para grid
     // sombra para Android
     elevation: 5,
     // sombra para iOS

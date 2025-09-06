@@ -1,7 +1,8 @@
 import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import TabNavigator from "./TabNavigator";
-import PerfilScreen from "../screens/ProfileScreen"; // Abrimos directamente el perfil
+import PerfilScreen from "../screens/ProfileScreen";
+import CrearServicioScreen from "../screens/CrearServicioScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -11,11 +12,15 @@ export default function RootStack() {
       {/* La tab siempre visible */}
       <Stack.Screen name="Tabs" component={TabNavigator} />
 
-      {/* Perfil se abre sobre la tab, pero la tab sigue visible */}
+      {/* Pantalla de perfil, abierta sobre la tab */}
       <Stack.Screen name="Perfil" component={PerfilScreen} />
+
+      {/* Pantalla para crear un servicio */}
+      <Stack.Screen name="CrearServicioScreen" component={CrearServicioScreen} />
     </Stack.Navigator>
   );
 }
+
 
 
 
